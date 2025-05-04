@@ -1,9 +1,7 @@
 ---
-
-```markdown
 # Mongo REST API
 
-This is a basic RESTful API built with **Go**, using **Gorilla Mux** for routing and **MongoDB** as the database. It performs standard **CRUD (Create, Read, Update, Delete)** operations on a `User` collection. The API is tested using **Postman**.
+This is a basic RESTful API built with Go, using Gorilla Mux for routing and MongoDB as the database. It performs standard CRUD (Create, Read, Update, Delete) operations on a `User` collection. The API is tested using Postman.
 
 ## 🛠 Tech Stack
 
