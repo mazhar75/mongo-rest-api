@@ -90,6 +90,3 @@ mongo-rest-api/
 
 Developed by Mazharul.
 
-```
----
-```
