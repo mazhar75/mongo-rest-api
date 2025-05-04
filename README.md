@@ -1,5 +1,3 @@
-Sure! Here's the complete `README.md` file in one copy-paste block. You can copy this and save it directly as `README.md` in your `mongo-rest-api` folder:
-
 ---
 
 ```markdown
