@@ -88,11 +88,8 @@ mongo-rest-api/
 
 ## 🧑‍💻 Author
 
-Developed by \Mazharul.
+Developed by Mazharul.
 
 ```
-
 ---
-
-Let me know if you want to personalize this with your name, GitHub link, or add badges (like Go version, build status, etc.).
 ```
