@@ -1,40 +1,62 @@
 package main
 
 import (
-  "fmt"
-  "log"
-  "net/http"
+	"fmt"
+	"log"
+	"net/http"
+	"os"
 
-  "github.com/gorilla/mux"
-  "github.com/rs/cors"
-  "mongo-rest-api/db"
-  "mongo-rest-api/handlers"
+	"github.com/joho/godotenv"
+	"github.com/gorilla/mux"
+	"github.com/rs/cors"
+
+	"mongo-rest-api/db"
+	"mongo-rest-api/handlers"
 )
 
+// init loads environment variables from .env before anything else
+func init() {
+	if err := godotenv.Load(); err != nil {
+		log.Println("No .env file found — relying on OS environment")
+	}
+}
+
 func main() {
-  // 1. connect to MongoDB
-  db.Connect()
+	// Ensure JWT secret is set
+	if os.Getenv("JWT_SECRET") == "" {
+		log.Fatal("JWT_SECRET not set")
+	}
 
-  // 2. set up router
-  r := mux.NewRouter()
-  r.HandleFunc("/users", handlers.CreateUser).Methods("POST")
-  r.HandleFunc("/users", handlers.GetUsers).Methods("GET")
-  r.HandleFunc("/users/{id}", handlers.GetUser).Methods("GET")
-  r.HandleFunc("/users/{id}", handlers.UpdateUser).Methods("PUT")
-  r.HandleFunc("/users/{id}", handlers.DeleteUser).Methods("DELETE")
+	// Connect to MongoDB
+	db.Connect()
 
-  // 3. configure CORS
-  c := cors.New(cors.Options{
-    AllowedOrigins:   []string{"*"},          // allow all, or list your domains
-    AllowedMethods:   []string{"GET","POST","PUT","DELETE","OPTIONS"},
-    AllowedHeaders:   []string{"Authorization","Content-Type"},
-    AllowCredentials: true,
-  })
+	// Create router
+	r := mux.NewRouter()
 
-  // 4. wrap router with CORS middleware
-  handler := c.Handler(r)
+	// Public endpoints
+	r.HandleFunc("/register", handlers.RegisterUser).Methods("POST")
+	r.HandleFunc("/login", handlers.LoginUser).Methods("POST")
 
-  addr := ":8080"
-  fmt.Println("Server running at", addr)
-  log.Fatal(http.ListenAndServe(addr, handler))
+	// Protected endpoints under /users
+	api := r.PathPrefix("/users").Subrouter()
+	api.Use(handlers.AuthMiddleware)
+	api.HandleFunc("", handlers.CreateUser).Methods("POST")
+	api.HandleFunc("", handlers.GetUsers).Methods("GET")
+	api.HandleFunc("/{id}", handlers.GetUser).Methods("GET")
+	api.HandleFunc("/{id}", handlers.UpdateUser).Methods("PUT")
+	api.HandleFunc("/{id}", handlers.DeleteUser).Methods("DELETE")
+
+	// Enable CORS
+	c := cors.New(cors.Options{
+		AllowedOrigins:   []string{"*"},
+		AllowedMethods:   []string{"GET", "POST", "PUT", "DELETE", "OPTIONS"},
+		AllowedHeaders:   []string{"Authorization", "Content-Type"},
+		AllowCredentials: true,
+	})
+	handler := c.Handler(r)
+
+	// Start server
+	addr := ":8080"
+	fmt.Println("Server running at", addr)
+	log.Fatal(http.ListenAndServe(addr, handler))
 }
